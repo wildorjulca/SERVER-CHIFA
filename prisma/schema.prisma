@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model bebida {
+  id_bebida     Int        @id @default(autoincrement())
+  nombre_bebida String     @db.VarChar(100)
+  descripcion   String?    @db.Text
+  precio        Decimal    @db.Decimal(10, 2)
+  creado_en     DateTime?  @default(now()) @db.Timestamp(0)
+  favorito      favorito[]
+  pedido        pedido[]
+
+  @@index([precio], map: "idx_precio")
+}
+
+model carrito {
+  id_carrito Int       @id @default(autoincrement())
+  id_cliente Int
+  creado_en  DateTime? @default(now()) @db.Timestamp(0)
+  cliente    cliente   @relation(fields: [id_cliente], references: [id_cliente], onDelete: Cascade, map: "carrito_ibfk_1")
+
+  @@index([id_cliente], map: "idx_cliente")
+}
+
+model cliente {
+  id_cliente      Int       @id @default(autoincrement())
+  nombre_completo String    @db.VarChar(100)
+  telefono        String?   @db.VarChar(15)
+  correo          String?   @db.VarChar(100)
+  fecha_registro  DateTime? @default(now()) @db.Timestamp(0)
+  carrito         carrito[]
+  pedido          pedido[]
+
+  @@index([correo], map: "idx_correo")
+  @@index([telefono], map: "idx_telefono")
+}
+
+model favorito {
+  id_favorito      Int     @id @default(autoincrement())
+  id_menu          Int
+  id_bebida        Int?
+  numero_favoritos Int?    @default(0)
+  menu             menu    @relation(fields: [id_menu], references: [id_menu], onDelete: Cascade, map: "favorito_ibfk_1")
+  bebida           bebida? @relation(fields: [id_bebida], references: [id_bebida], onDelete: Cascade, map: "favorito_ibfk_2")
+
+  @@index([id_bebida], map: "id_bebida")
+  @@index([id_menu], map: "id_menu")
+  @@index([numero_favoritos], map: "idx_favoritos")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model menu {
+  id_menu            Int        @id @default(autoincrement())
+  nombre_plato       String     @db.VarChar(100)
+  descripcion        String?    @db.Text
+  precio             Decimal    @db.Decimal(10, 2)
+  tiempo_preparacion Int?
+  oferta             Boolean?   @default(false)
+  creado_en          DateTime?  @default(now()) @db.Timestamp(0)
+  favorito           favorito[]
+  pedido             pedido[]
+  imagen_url  String?
+
+  @@index([oferta], map: "idx_oferta")
+  @@index([precio], map: "idx_precio")
+}
+
+model mesa {
+  id_mesa     Int          @id @default(autoincrement())
+  nombre_mesa String       @db.VarChar(20)
+  estado      mesa_estado? @default(libre)
+  pedido      pedido[]
+
+  @@index([estado], map: "idx_estado")
+}
+
+model pago {
+  id_pago     Int              @id @default(autoincrement())
+  id_pedido   Int
+  id_cajero   Int?
+  metodo_pago pago_metodo_pago
+  monto       Decimal          @db.Decimal(10, 2)
+  fecha_pago  DateTime?        @default(now()) @db.Timestamp(0)
+  pedido      pedido           @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade, map: "pago_ibfk_1")
+  rol         rol?             @relation(fields: [id_cajero], references: [id_rol], map: "pago_ibfk_2")
+
+  @@index([id_cajero], map: "id_cajero")
+  @@index([id_pedido], map: "id_pedido")
+  @@index([fecha_pago], map: "idx_fecha")
+  @@index([metodo_pago], map: "idx_metodo")
+}
+
+model pedido {
+  id_pedido    Int            @id @default(autoincrement())
+  id_menu      Int?
+  id_bebida    Int?
+  id_cliente   Int?
+  id_mesa      Int?
+  cantidad     Int?           @default(1)
+  estado       pedido_estado? @default(pendiente)
+  fecha_pedido DateTime?      @default(now()) @db.Timestamp(0)
+  pago         pago[]
+  menu         menu?          @relation(fields: [id_menu], references: [id_menu], map: "pedido_ibfk_1")
+  bebida       bebida?        @relation(fields: [id_bebida], references: [id_bebida], map: "pedido_ibfk_2")
+  cliente      cliente?       @relation(fields: [id_cliente], references: [id_cliente], map: "pedido_ibfk_3")
+  mesa         mesa?          @relation(fields: [id_mesa], references: [id_mesa], map: "pedido_ibfk_4")
+  reporte      reporte[]
+
+  @@index([id_bebida], map: "id_bebida")
+  @@index([id_menu], map: "id_menu")
+  @@index([id_mesa], map: "id_mesa")
+  @@index([id_cliente], map: "idx_cliente")
+  @@index([estado], map: "idx_estado")
+  @@index([fecha_pedido], map: "idx_fecha")
+}
+
+model reporte {
+  id_reporte           Int       @id @default(autoincrement())
+  total_ventas_mes     Decimal?  @db.Decimal(10, 2)
+  bebidas_mas_vendidas String?   @db.Text
+  pedidos_por_empleado String?   @db.Text
+  plato_mas_vendido    String?   @db.Text
+  fecha_generado       DateTime? @default(now()) @db.Timestamp(0)
+  id_pedido            Int?
+  pedido               pedido?   @relation(fields: [id_pedido], references: [id_pedido], map: "reporte_ibfk_1")
+
+  @@index([id_pedido], map: "id_pedido")
+  @@index([fecha_generado], map: "idx_fecha")
+}
+
+model rol {
+  id_rol     Int       @id @default(autoincrement())
+  nombre_rol String    @db.VarChar(50)
+  correo     String    @unique(map: "correo") @db.VarChar(100)
+  clave      String    @db.VarChar(255)
+  creado_en  DateTime? @default(now()) @db.Timestamp(0)
+  pago       pago[]
+
+  @@index([nombre_rol], map: "idx_nombre_rol")
+}
+
+enum mesa_estado {
+  libre
+  ocupada
+  reservada
+}
+
+enum pago_metodo_pago {
+  efectivo
+  yape
+  plin
+  tarjeta
+}
+
+enum pedido_estado {
+  pendiente
+  en_preparacion
+  preparado
+  entregado
+  cancelado
+}
