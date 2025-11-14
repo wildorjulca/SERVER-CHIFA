@@ -7,4 +7,9 @@ const authenticacionCTRL = async (req: Request, res: Response) => {
     res.status(response.status).send(response)
 }
 
-export { authenticacionCTRL }
+const newAccountUserCTRL =(req: Request, res: Response)=>{
+    const { } = req.body
+    // const response = await 
+}
+
+export { authenticacionCTRL, newAccountUserCTRL }

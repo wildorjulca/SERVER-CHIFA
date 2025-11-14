@@ -1,3 +1,11 @@
+// =====================================================
+// SCHEMA PRISMA - SISTEMA DE GESTIÓN DE RESTAURANTE
+// =====================================================
+// Base de datos: MySQL
+// Descripción: Sistema completo para gestión de pedidos,
+//              pagos, mesas, menú y reportes
+// =====================================================
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,161 +15,317 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model bebida {
-  id_bebida     Int        @id @default(autoincrement())
-  nombre_bebida String     @db.VarChar(100)
-  descripcion   String?    @db.Text
-  precio        Decimal    @db.Decimal(10, 2)
-  creado_en     DateTime?  @default(now()) @db.Timestamp(0)
-  favorito      favorito[]
-  pedido        pedido[]
+// =====================================================
+// MODELO: CLIENTE
+// Descripción: Información de los clientes del restaurante
+// =====================================================
+model Cliente {
+  id_cliente      Int      @id @default(autoincrement())
+  nombre_completo String   @db.VarChar(100)
+  telefono        String?  @db.VarChar(15)
+  correo          String?  @unique @db.VarChar(100)
+  fecha_registro  DateTime @default(now()) @db.Timestamp(0)
 
-  @@index([precio], map: "idx_precio")
+  // Relaciones
+  pedidos Pedido[]
+
+  @@index([correo], map: "idx_cliente_correo")
+  @@index([telefono], map: "idx_cliente_telefono")
+  @@map("cliente")
 }
 
-model carrito {
-  id_carrito Int       @id @default(autoincrement())
-  id_cliente Int
-  creado_en  DateTime? @default(now()) @db.Timestamp(0)
-  cliente    cliente   @relation(fields: [id_cliente], references: [id_cliente], onDelete: Cascade, map: "carrito_ibfk_1")
+// =====================================================
+// MODELO: MESA
+// Descripción: Mesas disponibles en el restaurante
+// =====================================================
+model Mesa {
+  id_mesa     Int        @id @default(autoincrement())
+  nombre_mesa String     @db.VarChar(20) // Ej: "Mesa 1", "Mesa VIP"
+  capacidad   Int        @default(4) // Número de personas
+  estado      EstadoMesa @default(libre)
 
-  @@index([id_cliente], map: "idx_cliente")
+  // Relaciones
+  pedidos Pedido[]
+
+  @@index([estado], map: "idx_mesa_estado")
+  @@map("mesa")
 }
 
-model cliente {
-  id_cliente      Int       @id @default(autoincrement())
-  nombre_completo String    @db.VarChar(100)
-  telefono        String?   @db.VarChar(15)
-  correo          String?   @db.VarChar(100)
-  fecha_registro  DateTime? @default(now()) @db.Timestamp(0)
-  carrito         carrito[]
-  pedido          pedido[]
+// =====================================================
+// MODELO: MENÚ
+// Descripción: Platos disponibles en el menú del restaurante
+// =====================================================
+model Menu {
+  id_menu            Int      @id @default(autoincrement())
+  nombre_plato       String   @db.VarChar(100)
+  descripcion        String?  @db.Text
+  precio             Decimal  @db.Decimal(10, 2)
+  categoria          String   @db.VarChar(50) // Ej: "Entrada", "Plato de Fondo", "Postre"
+  tiempo_preparacion Int? // Tiempo en minutos
+  disponible         Boolean  @default(true) // Si está disponible o agotado
+  imagen_url         String?  @db.VarChar(255)
+  oferta             Boolean  @default(false)
+  descuento          Decimal? @db.Decimal(5, 2) // Porcentaje de descuento
+  creado_en          DateTime @default(now()) @db.Timestamp(0)
+  actualizado_en     DateTime @updatedAt @db.Timestamp(0)
 
-  @@index([correo], map: "idx_correo")
-  @@index([telefono], map: "idx_telefono")
+  // Relaciones
+  items_pedido ItemPedido[]
+  favoritos    Favorito[]
+
+  @@index([categoria], map: "idx_menu_categoria")
+  @@index([precio], map: "idx_menu_precio")
+  @@index([oferta], map: "idx_menu_oferta")
+  @@index([disponible], map: "idx_menu_disponible")
+  @@map("menu")
 }
 
-model favorito {
-  id_favorito      Int     @id @default(autoincrement())
-  id_menu          Int
-  id_bebida        Int?
-  numero_favoritos Int?    @default(0)
-  menu             menu    @relation(fields: [id_menu], references: [id_menu], onDelete: Cascade, map: "favorito_ibfk_1")
-  bebida           bebida? @relation(fields: [id_bebida], references: [id_bebida], onDelete: Cascade, map: "favorito_ibfk_2")
+// =====================================================
+// MODELO: BEBIDA
+// Descripción: Bebidas disponibles en el restaurante
+// =====================================================
+model Bebida {
+  id_bebida     Int      @id @default(autoincrement())
+  nombre_bebida String   @db.VarChar(100)
+  descripcion   String?  @db.Text
+  precio        Decimal  @db.Decimal(10, 2)
+  categoria     String   @db.VarChar(50) // Ej: "Gaseosa", "Jugo", "Cerveza"
+  tamano        String?  @db.VarChar(20) // Ej: "Personal", "1L", "Jarra"
+  disponible    Boolean  @default(true)
+  imagen_url    String?  @db.VarChar(255)
+  creado_en     DateTime @default(now()) @db.Timestamp(0)
 
-  @@index([id_bebida], map: "id_bebida")
-  @@index([id_menu], map: "id_menu")
-  @@index([numero_favoritos], map: "idx_favoritos")
+  // Relaciones
+  items_pedido ItemPedido[]
+  favoritos    Favorito[]
+
+  @@index([precio], map: "idx_bebida_precio")
+  @@index([categoria], map: "idx_bebida_categoria")
+  @@index([disponible], map: "idx_bebida_disponible")
+  @@map("bebida")
 }
 
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model menu {
-  id_menu            Int        @id @default(autoincrement())
-  nombre_plato       String     @db.VarChar(100)
-  descripcion        String?    @db.Text
-  precio             Decimal    @db.Decimal(10, 2)
-  tiempo_preparacion Int?
-  oferta             Boolean?   @default(false)
-  creado_en          DateTime?  @default(now()) @db.Timestamp(0)
-  favorito           favorito[]
-  pedido             pedido[]
-  imagen_url  String?
+// =====================================================
+// MODELO: ROL (Usuarios del Sistema)
+// Descripción: Empleados del restaurante (Meseros, Cajeros, Admin)
+// =====================================================
+model Rol {
+  id_rol          Int      @id @default(autoincrement())
+  nombre_completo String   @db.VarChar(100)
+  nombre_rol      String   @db.VarChar(50) // "mesero", "cajero", "admin", "cocinero"
+  correo          String   @unique @db.VarChar(100)
+  clave           String   @db.VarChar(255) // Hash de la contraseña
+  activo          Boolean  @default(true)
+  creado_en       DateTime @default(now()) @db.Timestamp(0)
 
-  @@index([oferta], map: "idx_oferta")
-  @@index([precio], map: "idx_precio")
+  // Relaciones
+  pedidos_atendidos Pedido[] @relation("MeseroPedidos")
+  pagos_registrados Pago[]
+
+  @@index([nombre_rol], map: "idx_rol_nombre")
+  @@index([correo], map: "idx_rol_correo")
+  @@map("rol")
 }
 
-model mesa {
-  id_mesa     Int          @id @default(autoincrement())
-  nombre_mesa String       @db.VarChar(20)
-  estado      mesa_estado? @default(libre)
-  pedido      pedido[]
+// =====================================================
+// MODELO: PEDIDO
+// Descripción: Pedidos realizados por los clientes
+// Nota: Un pedido puede tener múltiples items (platos/bebidas)
+// =====================================================
+model Pedido {
+  id_pedido      Int          @id @default(autoincrement())
+  numero_pedido  String       @unique @db.VarChar(20) // Ej: "PED-001"
+  id_cliente     Int?
+  id_mesa        Int?
+  id_mesero      Int? // Quién atendió
+  nombre_cliente String?      @db.VarChar(100) // Para clientes sin registro
+  estado         EstadoPedido @default(pendiente)
+  total          Decimal      @db.Decimal(10, 2)
+  observaciones  String?      @db.Text // Comentarios del cliente
+  fecha_pedido   DateTime     @default(now()) @db.Timestamp(0)
+  fecha_entrega  DateTime?    @db.Timestamp(0) // Cuándo se entregó
 
-  @@index([estado], map: "idx_estado")
+  // Relaciones
+  cliente Cliente?     @relation(fields: [id_cliente], references: [id_cliente], onDelete: SetNull)
+  mesa    Mesa?        @relation(fields: [id_mesa], references: [id_mesa], onDelete: SetNull)
+  mesero  Rol?         @relation("MeseroPedidos", fields: [id_mesero], references: [id_rol], onDelete: SetNull)
+  items   ItemPedido[]
+  pago    Pago?
+
+  @@index([id_cliente], map: "idx_pedido_cliente")
+  @@index([id_mesa], map: "idx_pedido_mesa")
+  @@index([id_mesero], map: "idx_pedido_mesero")
+  @@index([estado], map: "idx_pedido_estado")
+  @@index([fecha_pedido], map: "idx_pedido_fecha")
+  @@index([numero_pedido], map: "idx_pedido_numero")
+  @@map("pedido")
 }
 
-model pago {
-  id_pago     Int              @id @default(autoincrement())
-  id_pedido   Int
-  id_cajero   Int?
-  metodo_pago pago_metodo_pago
-  monto       Decimal          @db.Decimal(10, 2)
-  fecha_pago  DateTime?        @default(now()) @db.Timestamp(0)
-  pedido      pedido           @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade, map: "pago_ibfk_1")
-  rol         rol?             @relation(fields: [id_cajero], references: [id_rol], map: "pago_ibfk_2")
+// =====================================================
+// MODELO: ITEM_PEDIDO
+// Descripción: Items individuales de cada pedido
+// Tabla intermedia que conecta Pedido con Menu/Bebida
+// =====================================================
+model ItemPedido {
+  id_item_pedido  Int     @id @default(autoincrement())
+  id_pedido       Int
+  id_menu         Int?
+  id_bebida       Int?
+  cantidad        Int     @default(1)
+  precio_unitario Decimal @db.Decimal(10, 2) // Precio al momento de la orden
+  subtotal        Decimal @db.Decimal(10, 2) // cantidad * precio_unitario
+  observaciones   String? @db.VarChar(255) // Ej: "Sin cebolla", "Bien cocido"
 
-  @@index([id_cajero], map: "id_cajero")
-  @@index([id_pedido], map: "id_pedido")
-  @@index([fecha_pago], map: "idx_fecha")
-  @@index([metodo_pago], map: "idx_metodo")
+  // Relaciones
+  pedido Pedido  @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade)
+  menu   Menu?   @relation(fields: [id_menu], references: [id_menu], onDelete: SetNull)
+  bebida Bebida? @relation(fields: [id_bebida], references: [id_bebida], onDelete: SetNull)
+
+  @@index([id_pedido], map: "idx_item_pedido")
+  @@index([id_menu], map: "idx_item_menu")
+  @@index([id_bebida], map: "idx_item_bebida")
+  @@map("item_pedido")
 }
 
-model pedido {
-  id_pedido    Int            @id @default(autoincrement())
-  id_menu      Int?
-  id_bebida    Int?
-  id_cliente   Int?
-  id_mesa      Int?
-  cantidad     Int?           @default(1)
-  estado       pedido_estado? @default(pendiente)
-  fecha_pedido DateTime?      @default(now()) @db.Timestamp(0)
-  pago         pago[]
-  menu         menu?          @relation(fields: [id_menu], references: [id_menu], map: "pedido_ibfk_1")
-  bebida       bebida?        @relation(fields: [id_bebida], references: [id_bebida], map: "pedido_ibfk_2")
-  cliente      cliente?       @relation(fields: [id_cliente], references: [id_cliente], map: "pedido_ibfk_3")
-  mesa         mesa?          @relation(fields: [id_mesa], references: [id_mesa], map: "pedido_ibfk_4")
-  reporte      reporte[]
+// =====================================================
+// MODELO: PAGO
+// Descripción: Registro de pagos de los pedidos
+// =====================================================
+model Pago {
+  id_pago        Int        @id @default(autoincrement())
+  id_pedido      Int        @unique // Un pago por pedido
+  id_cajero      Int?
+  metodo_pago    MetodoPago
+  monto          Decimal    @db.Decimal(10, 2)
+  monto_recibido Decimal?   @db.Decimal(10, 2) // Para pagos en efectivo
+  cambio         Decimal?   @db.Decimal(10, 2) // Vuelto
+  comprobante    String?    @db.VarChar(50) // Número de boleta/factura
+  pagado         Boolean    @default(false)
+  fecha_pago     DateTime   @default(now()) @db.Timestamp(0)
 
-  @@index([id_bebida], map: "id_bebida")
-  @@index([id_menu], map: "id_menu")
-  @@index([id_mesa], map: "id_mesa")
-  @@index([id_cliente], map: "idx_cliente")
-  @@index([estado], map: "idx_estado")
-  @@index([fecha_pedido], map: "idx_fecha")
+  // Relaciones
+  pedido Pedido @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade)
+  cajero Rol?   @relation(fields: [id_cajero], references: [id_rol], onDelete: SetNull)
+
+  @@index([id_pedido], map: "idx_pago_pedido")
+  @@index([id_cajero], map: "idx_pago_cajero")
+  @@index([fecha_pago], map: "idx_pago_fecha")
+  @@index([metodo_pago], map: "idx_pago_metodo")
+  @@index([pagado], map: "idx_pago_estado")
+  @@map("pago")
 }
 
-model reporte {
-  id_reporte           Int       @id @default(autoincrement())
-  total_ventas_mes     Decimal?  @db.Decimal(10, 2)
-  bebidas_mas_vendidas String?   @db.Text
-  pedidos_por_empleado String?   @db.Text
-  plato_mas_vendido    String?   @db.Text
-  fecha_generado       DateTime? @default(now()) @db.Timestamp(0)
-  id_pedido            Int?
-  pedido               pedido?   @relation(fields: [id_pedido], references: [id_pedido], map: "reporte_ibfk_1")
+// =====================================================
+// MODELO: FAVORITO
+// Descripción: Platos y bebidas más populares
+// Sistema de conteo de favoritos
+// =====================================================
+model Favorito {
+  id_favorito       Int      @id @default(autoincrement())
+  id_menu           Int?
+  id_bebida         Int?
+  numero_favoritos  Int      @default(0)
+  fecha_actualizado DateTime @updatedAt @db.Timestamp(0)
 
-  @@index([id_pedido], map: "id_pedido")
-  @@index([fecha_generado], map: "idx_fecha")
+  // Relaciones
+  menu   Menu?   @relation(fields: [id_menu], references: [id_menu], onDelete: Cascade)
+  bebida Bebida? @relation(fields: [id_bebida], references: [id_bebida], onDelete: Cascade)
+
+  @@index([id_menu], map: "idx_favorito_menu")
+  @@index([id_bebida], map: "idx_favorito_bebida")
+  @@index([numero_favoritos], map: "idx_favorito_numero")
+  @@map("favorito")
 }
 
-model rol {
-  id_rol     Int       @id @default(autoincrement())
-  nombre_rol String    @db.VarChar(50)
-  correo     String    @unique(map: "correo") @db.VarChar(100)
-  clave      String    @db.VarChar(255)
-  creado_en  DateTime? @default(now()) @db.Timestamp(0)
-  pago       pago[]
+// =====================================================
+// MODELO: REPORTE
+// Descripción: Reportes de ventas y estadísticas
+// =====================================================
+model Reporte {
+  id_reporte            Int      @id @default(autoincrement())
+  tipo_reporte          String   @db.VarChar(50) // "diario", "semanal", "mensual"
+  fecha_inicio          DateTime @db.Date
+  fecha_fin             DateTime @db.Date
+  total_ventas          Decimal  @db.Decimal(10, 2)
+  total_pedidos         Int      @default(0)
+  plato_mas_vendido     String?  @db.VarChar(100)
+  bebida_mas_vendida    String?  @db.VarChar(100)
+  metodo_pago_preferido String?  @db.VarChar(50)
+  promedio_ticket       Decimal? @db.Decimal(10, 2)
+  datos_json            String?  @db.Text // JSON con datos adicionales
+  fecha_generado        DateTime @default(now()) @db.Timestamp(0)
 
-  @@index([nombre_rol], map: "idx_nombre_rol")
+  @@index([tipo_reporte], map: "idx_reporte_tipo")
+  @@index([fecha_inicio, fecha_fin], map: "idx_reporte_fechas")
+  @@index([fecha_generado], map: "idx_reporte_generado")
+  @@map("reporte")
 }
 
-enum mesa_estado {
+// =====================================================
+// ENUMS
+// =====================================================
+
+// Estado de las mesas
+enum EstadoMesa {
   libre
   ocupada
   reservada
+  mantenimiento
+
+  @@map("estado_mesa")
 }
 
-enum pago_metodo_pago {
+// Estado de los pedidos
+enum EstadoPedido {
+  pendiente // Pedido registrado, esperando envío a cocina
+  en_preparacion // En cocina
+  preparado // Listo para servir
+  entregado // Entregado al cliente
+  cancelado // Pedido cancelado
+
+  @@map("estado_pedido")
+}
+
+// Métodos de pago disponibles
+enum MetodoPago {
   efectivo
   yape
   plin
   tarjeta
+  transferencia
+
+  @@map("metodo_pago")
 }
 
-enum pedido_estado {
-  pendiente
-  en_preparacion
-  preparado
-  entregado
-  cancelado
-}
+// =====================================================
+// NOTAS DE IMPLEMENTACIÓN
+// =====================================================
+
+// 1. VARIABLES DE ENTORNO (.env)
+// DATABASE_URL="mysql://usuario:password@localhost:3306/restaurante_db"
+
+// 2. COMANDOS PRISMA
+// npx prisma generate          // Generar cliente Prisma
+// npx prisma db push           // Sincronizar schema con BD (desarrollo)
+// npx prisma migrate dev       // Crear migración (producción)
+// npx prisma studio            // Abrir interfaz visual de BD
+
+// 3. ÍNDICES
+// - Se agregaron índices en campos frecuentemente consultados
+// - Mejora el rendimiento en búsquedas y reportes
+
+// 4. RELACIONES
+// - onDelete: Cascade  → Elimina registros relacionados
+// - onDelete: SetNull  → Mantiene registro pero elimina relación
+// - @unique            → Garantiza valores únicos
+
+// 5. MEJORAS vs MODELO ORIGINAL
+// - Tabla ItemPedido para múltiples items por pedido
+// - Campo numero_pedido único y legible
+// - Campo disponible en Menu y Bebida
+// - Campo nombre_cliente para clientes sin registro
+// - Campo observaciones en pedidos e items
+// - Campo pagado en Pago para control
+// - Timestamps automáticos (creado_en, actualizado_en)
+// - Más índices para mejor rendimiento
+// - Enums mejor documentados
