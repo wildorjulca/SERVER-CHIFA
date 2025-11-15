@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { crearPedidoCompletoService } from '../service/pedido.Service';
+import { crearPedidoCompletoService, getFooterReportePedidosService, getPedidosDetallesPorPagarService } from '../service/pedido.Service';
 // =====================================================
 // CREAR PEDIDO COMPLETO CON ITEMS
 // =====================================================
@@ -8,7 +8,7 @@ export async function crearPedido(req: Request, res: Response) {
         const { id_mesa, id_mesero, id_cliente, nombre_cliente, observaciones, items } = req.body;
 
         // if (!id_mesa || !id_mesero || !nombre_cliente || !items || !Array.isArray(items)) {
-        if (!id_mesa || !id_mesero ||  !items || !Array.isArray(items)) {
+        if (!id_mesa || !id_mesero || !items || !Array.isArray(items)) {
             return res.status(400).json({
                 error: 'id_mesa, id_mesero, nombre_cliente y items (array) son requeridos'
             });
@@ -37,4 +37,14 @@ export async function crearPedido(req: Request, res: Response) {
         console.error('Error crearPedido controller:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
     }
+}
+
+export async function pedidosDetallesPorPagar(req: Request, res: Response) {
+    const response = await getPedidosDetallesPorPagarService()
+    res.status(response.status).send(response)
+}
+
+export async function footerReportePedidos(req: Request, res: Response) {
+    const response = await getFooterReportePedidosService()
+    res.status(response.status).send(response)
 }
