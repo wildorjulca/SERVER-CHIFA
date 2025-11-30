@@ -37,7 +37,14 @@ async function main() {
         correo: 'chef@chifa.com',
         clave: 'chef123',
         activo: true,
-      }
+      },      
+      {
+        nombre_completo: 'Jeniffer Yazmin - Admin',
+        nombre_rol: 'admin',
+        correo: 'yasmin@chifa.com',
+        clave: '123456',
+        activo: true,
+      },
     ],
     skipDuplicates: true,
   });

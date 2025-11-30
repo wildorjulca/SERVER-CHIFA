@@ -1,12 +1,4 @@
-// =====================================================
-// CREAR PEDIDO COMPLETO CON ITEMS
-//  ====================================================
-
-
 import prisma from "../lib/prisma";
-
-// =====================================================
-
 
 export const getAllUsuariosService = async () => {
     try {
