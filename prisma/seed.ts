@@ -1,6 +1,5 @@
-// seed.js
-const { PrismaClient } = require('@prisma/client');
-// const { hash } = require('bcryptjs');
+import { PrismaClient } from '@prisma/client';
+// import { hash } from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -15,28 +14,28 @@ async function main() {
         nombre_completo: 'Administrador Principal',
         nombre_rol: 'admin',
         correo: 'admin@chifa.com',
-        clave: '$2a$10$KxG5.5P2Q7U8Q2Q2Q2Q2Q2uQ2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2', // admin123
+        clave: 'admin123',
         activo: true,
       },
       {
         nombre_completo: 'Carlos Mendoza - Cajero',
         nombre_rol: 'cajero',
         correo: 'cajero@chifa.com',
-        clave: '$2a$10$KxG5.5P2Q7U8Q2Q2Q2Q2Q2uQ2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2', // cajero123
+        clave: 'cajero123',
         activo: true,
       },
       {
         nombre_completo: 'María López - Mesera',
         nombre_rol: 'mesero',
         correo: 'mesero@chifa.com',
-        clave: '$2a$10$KxG5.5P2Q7U8Q2Q2Q2Q2Q2uQ2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2', // mesero123
+        clave: 'mesero123',
         activo: true,
       },
       {
         nombre_completo: 'Chef Wong - Cocinero',
         nombre_rol: 'cocinero',
         correo: 'chef@chifa.com',
-        clave: '$2a$10$KxG5.5P2Q7U8Q2Q2Q2Q2Q2uQ2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2Q2', // chef123
+        clave: 'chef123',
         activo: true,
       }
     ],
