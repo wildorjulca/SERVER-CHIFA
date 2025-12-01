@@ -37,7 +37,14 @@ async function main() {
         correo: 'chef@chifa.com',
         clave: 'chef123',
         activo: true,
-      }
+      },      
+      {
+        nombre_completo: 'Jeniffer Yazmin - Admin',
+        nombre_rol: 'admin',
+        correo: 'yasmin@chifa.com',
+        clave: '123456',
+        activo: true,
+      },
     ],
     skipDuplicates: true,
   });
@@ -294,7 +301,7 @@ async function main() {
   });
 
   // 6. Insertar favoritos
-  console.log('❤️ Insertando favoritos...');
+  console.log('❤ Insertando favoritos...');
   const favoritos = await prisma.favorito.createMany({
     data: [
       { id_menu: 1, numero_favoritos: 25 },
@@ -370,25 +377,25 @@ async function main() {
   });
 
   // 8. Insertar items de pedido
-  console.log('🍽️ Insertando items de pedido...');
+  console.log('🍽 Insertando items de pedido...');
   const itemsPedido = await prisma.itemPedido.createMany({
     data: [
       // Pedido 1
       { id_pedido: 1, id_menu: 1, cantidad: 2, precio_unitario: 28.00, subtotal: 56.00 },
       { id_pedido: 1, id_bebida: 1, cantidad: 2, precio_unitario: 6.00, subtotal: 12.00 },
-      
+
       // Pedido 2
       { id_pedido: 2, id_menu: 2, cantidad: 1, precio_unitario: 22.00, subtotal: 22.00 },
       { id_pedido: 2, id_bebida: 2, cantidad: 1, precio_unitario: 5.50, subtotal: 5.50 },
-      
+
       // Pedido 3
       { id_pedido: 3, id_menu: 3, cantidad: 3, precio_unitario: 18.00, subtotal: 54.00 },
       { id_pedido: 3, id_bebida: 3, cantidad: 1, precio_unitario: 8.00, subtotal: 8.00 },
       { id_pedido: 3, id_bebida: 6, cantidad: 1, precio_unitario: 12.00, subtotal: 12.00 },
-      
+
       // Pedido 4
       { id_pedido: 4, id_menu: 4, cantidad: 1, precio_unitario: 14.00, subtotal: 14.00 },
-      
+
       // Pedido 5
       { id_pedido: 5, id_menu: 5, cantidad: 2, precio_unitario: 24.00, subtotal: 48.00 },
       { id_pedido: 5, id_bebida: 5, cantidad: 2, precio_unitario: 5.00, subtotal: 10.00 }
