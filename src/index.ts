@@ -7,6 +7,8 @@ import { routerMesa } from "./router/mesa.routes";
 import { routerPedido } from "./router/pedido.routes";
 import { routerUsuario } from "./router/usuario.routes";
 import { routerCocina } from "./router/cocina.routes";
+import { routerPago } from "./router/pago.routes";
+import { routerReportes } from "./router/reporte.routes";
 
 
 const app = express()
@@ -26,7 +28,10 @@ app.use("/api", routerMesa)
 app.use("/api", routerPedido)
 app.use("/api", routerUsuario)
 app.use("/api", routerCocina)
+app.use("/api", routerPago)
+app.use('/api/reportes', routerReportes);
 
-app.listen(3110, () => {
+
+app.listen(3110, '0.0.0.0', () => {
   console.log(`SERVIDOR EN EJECUCION http://localhost:3110`)
 })

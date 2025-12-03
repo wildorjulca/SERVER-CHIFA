@@ -89,7 +89,9 @@ export const getPedidosDetallesPorPagarService = async () => {
                     { pago: { pagado: false } }
                 ],
                 estado: {
-                    in: ['preparado', 'entregado']
+                    // in: ['preparado', 'entregado']
+                    in: ['pendiente', 'preparado', 'entregado']
+
                 }
             },
             include: {
