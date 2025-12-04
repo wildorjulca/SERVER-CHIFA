@@ -1,27 +1,19 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "CommonJS",
-    "lib": [
-      "ES2020"
-    ],
-    "outDir": "./dist",
-    "rootDir": "./",     //"rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "types": [
-      "node"
-    ] // ← AGREGAR ESTA LÍNEA
+    "target": "es2016", // Especifica la versión de JavaScript objetivo
+    "module": "commonjs", // Usa CommonJS para la salida de módulos
+    "outDir": "dist", // Especifica el directorio donde se generará el código compilado
+    "rootDir": "src", // Especifica la raíz del código fuente TypeScript
+    "esModuleInterop": true, // Habilita soporte de interoperabilidad con ES Modules
+    "forceConsistentCasingInFileNames": true, // Garantiza consistencia en mayúsculas y minúsculas en nombres de archivo
+    "strict": true, // Habilita todas las comprobaciones estrictas
+    "skipLibCheck": true // Omite la comprobación de archivos .d.ts para acelerar la compilación
   },
   "include": [
-    "src/**/*",
-    "prisma/**/*" // ← AGREGAR para incluir archivos Prisma
-  ],
+    "src"
+  ], // Incluye todos los archivos en la carpeta src
   "exclude": [
     "node_modules",
     "dist"
-  ]
+  ] // Excluye la carpeta de salida y node_modules
 }
