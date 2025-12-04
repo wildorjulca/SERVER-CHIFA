@@ -1,4 +1,3 @@
-import { EstadoPedido } from "@prisma/client";
 import prisma from "../lib/prisma";
 
 export const getPedidosService = async () => {
@@ -6,7 +5,7 @@ export const getPedidosService = async () => {
         // Obtener pedidos con estado "pendiente" y sus relaciones necesarias para cocina
         const pedidos = await prisma.pedido.findMany({
             where: {
-                estado: EstadoPedido.pendiente
+                estado: "pendiente"
             },
             include: {
                 // Incluir información del cliente (si existe)
