@@ -1,4 +1,5 @@
 import express from "express";
+import dotenv from "dotenv";
 import cors from 'cors'
 import { routerUser } from "./router/user.routes";
 import { routerMenu } from "./router/menu.routes";
@@ -10,6 +11,7 @@ import { routerCocina } from "./router/cocina.routes";
 import { routerPago } from "./router/pago.routes";
 import { routerReportes } from "./router/reporte.routes";
 
+dotenv.config();
 
 const app = express()
 
