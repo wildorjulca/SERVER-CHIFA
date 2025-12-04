@@ -12,6 +12,7 @@ export const getMesaService = async () => {
 
         }
     } catch (error) {
+        console.log(error)
         return {
             succes: false,
             status: 500,
